@@ -65,3 +65,12 @@ streamlit run langfuse_monitor.py
 # For mobile access:
 ngrok http 8501
 ```
+## 🙏 Acknowledgements
+
+| Tool | Purpose |
+| :--- | :--- |
+| [LangChain](https://www.langchain.com/) | LLM orchestration |
+| [LangGraph](https://langchain-ai.github.io/langgraph/) | Agent state management |
+| [Langfuse](https://langfuse.com/) | Observability |
+| [arXiv](https://arxiv.org/) | Open access papers |
+| [Streamlit](https://streamlit.io/) | Interactive UI |
