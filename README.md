@@ -74,3 +74,7 @@ ngrok http 8501
 | [Langfuse](https://langfuse.com/) | Observability |
 | [arXiv](https://arxiv.org/) | Open access papers |
 | [Streamlit](https://streamlit.io/) | Interactive UI |
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
