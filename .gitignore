@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+.venv311/
+.venv_langfuse/
+ENV/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+chroma_db/
+arxiv_db/
+exports/
+research_results.json
+
+# Logs
+*.log
+*.out
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# OS
+Thumbs.db
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Uploads
+uploads/
+debug_uploads/
+
+# Build
+dist/
+build/
+*.egg-info/
+EOF
