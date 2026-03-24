@@ -6,11 +6,11 @@ An intelligent research assistant that progressively unlocks capabilities from b
 
 AInsights provides three tiers of research assistance, each building on the previous:
 
-| Tier | File | Capabilities |
-| :--- | :--- | :--- |
-| **FREE** | `app_level1.py` | PDF upload, basic RAG, ChromaDB storage |
-| **PRO** | `app_level2.py` | arXiv search, paper retrieval, citations |
-| **ENTERPRISE** | `app_level3.py` | Agentic AI, LangGraph orchestration, Langfuse observability |
+| Tier        | Capabilities                             |
+|:------------|:-----------------------------------------|
+| **Level 1** | PDF upload, basic RAG, ChromaDB storage  |
+| **Level 2** | arXiv search, paper retrieval, citations |
+| **Level 3** | Agentic AI, LangGraph orchestration, Langfuse observability |
 
 ## ✨ Features
 
@@ -20,4 +20,47 @@ AInsights provides three tiers of research assistance, each building on the prev
 - **📊 Langfuse Observability** - Token tracking, cost monitoring, latency analytics
 - **📱 Cross-Platform** - Access via mobile with ngrok tunneling
 
-## 🏗️ Architecture
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.11+
+- OpenAI API key
+- (Optional) Langfuse account for observability
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/plxavier/Agentic_AInsights.git
+cd Agentic_AInsights
+
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your API keys
+```
+# Choose a level:
+python app.py   #Level1
+python app_arxiv.py   #Level2
+python app_arxiv_agent_with_langfuse.py #Level3
+
+# In another terminal, start the UI:
+streamlit run streamlit/app_level_1.py --server.port 8501
+or
+streamlit run streamlit/app_level2.py
+or
+streamlit run streamlit/agent_mobile_level3.py
+or 
+streamlit run langfuse_monitor.py 
+
+
+# For mobile access:
+ngrok http 8501
