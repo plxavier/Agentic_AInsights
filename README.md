@@ -46,7 +46,7 @@ pip install -r requirements.txt
 # Set up environment variables
 cp .env.example .env
 # Edit .env with your API keys
-```
+
 # Choose a level:
 python app.py   #Level1
 python app_arxiv.py   #Level2
@@ -54,13 +54,14 @@ python app_arxiv_agent_with_langfuse.py #Level3
 
 # In another terminal, start the UI:
 streamlit run streamlit/app_level_1.py --server.port 8501
-or
+#or
 streamlit run streamlit/app_level2.py
-or
+#or
 streamlit run streamlit/agent_mobile_level3.py
-or 
+#or 
 streamlit run langfuse_monitor.py 
 
 
 # For mobile access:
 ngrok http 8501
+```
