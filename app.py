@@ -567,7 +567,7 @@ async def search_test(query: str = "protein design"):
     try:
         db, _, _ = initialize_components()
 
-        print(f"\n🧪 SEARCH TEST: '{query}'")
+        print(f"\nSEARCH TEST: '{query}'")
 
         # Run search
         docs = db.search_documents(query, k=3)
@@ -606,9 +606,7 @@ async def search_test(query: str = "protein design"):
         return {"error": str(error)}
 
 
-# ======================
-# STARTUP
-# ======================
+#start up
 @app.on_event("startup")
 async def startup_event():
     """Initialize components on startup"""
