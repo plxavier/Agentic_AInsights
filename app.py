@@ -27,15 +27,15 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# Initialize variables as None
+#initializing variables as None
 db = None
 ai = None
 upload_service = None
 
-# Test mode storage
+#testing mode storage
 test_uploads = []
 
-# CORS configuration
+#CORS configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allow all origins for debugging
@@ -62,23 +62,23 @@ def initialize_components():
             from upload_service import UploadService
 
             db = VectorDatabase()
-            print("✅ Database initialized")
+            print("Database initialized")
 
             ai = InsightsAI(db)
-            print("✅ AI initialized")
+            print("AI initialized")
 
             upload_service = UploadService(db)
-            print("✅ Upload service initialized")
+            print("Upload service initialized")
 
-            print("✅ All production components initialized successfully")
-        except ImportError as e:
-            print(f"❌ Import error: {e}")
+            print("All production components initialized successfully")
+        except ImportError as error:
+            print(f"Import error: {error}")
             traceback.print_exc()
-        except Exception as e:
-            print(f"❌ Initialization error: {e}")
+        except Exception as error:
+            print(f"Initialization error: {error}")
             traceback.print_exc()
     elif TEST_MODE:
-        print("✅ Running in test mode - no components initialized")
+        print("Running in test mode - no components initialized")
 
     return db, ai, upload_service
 
@@ -90,9 +90,7 @@ class QuestionRequest(BaseModel):
     filters: Optional[Dict] = None
 
 
-# ======================
-# COMMON ENDPOINTS
-# ======================
+#common endpoints
 @app.get("/")
 async def root():
     return {
@@ -137,11 +135,11 @@ async def health_check():
                 },
                 "timestamp": datetime.now().isoformat()
             }
-        except Exception as e:
+        except Exception as error:
             return {
                 "status": "degraded",
                 "mode": "production",
-                "error": str(e),
+                "error": str(error),
                 "debug": DEBUG_MODE,
                 "timestamp": datetime.now().isoformat()
             }
@@ -155,16 +153,16 @@ async def debug_upload(file: UploadFile = File(...)):
     try:
         # Read file
         contents = await file.read()
-        print(f"📄 File size: {len(contents)} bytes")
-        print(f"📄 Content type: {file.content_type}")
-        print(f"📄 Headers: {file.headers}")
+        print(f"File size: {len(contents)} bytes")
+        print(f"Content type: {file.content_type}")
+        print(f"Headers: {file.headers}")
 
-        # Save a copy for inspection
+        #save a copy for inspection
         os.makedirs("debug_uploads", exist_ok=True)
         debug_path = f"debug_uploads/{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
         with open(debug_path, "wb") as f:
             f.write(contents)
-        print(f"💾 Saved debug copy to: {debug_path}")
+        print(f"Saved debug copy to: {debug_path}")
 
         # Simple response
         return {
@@ -176,8 +174,8 @@ async def debug_upload(file: UploadFile = File(...)):
             "message": "File received successfully in debug mode"
         }
 
-    except Exception as e:
-        print(f"❌ Debug upload error: {e}")
+    except Exception as error:
+        print(f"Debug upload error: {error}")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Debug error: {str(e)}")
 
@@ -185,31 +183,31 @@ async def debug_upload(file: UploadFile = File(...)):
 @app.post("/api/upload")
 async def upload_paper(file: UploadFile = File(...)):
     """Upload and process a PDF research paper"""
-    print(f"📤 UPLOAD ENDPOINT CALLED: {file.filename}")
+    print(f"UPLOAD ENDPOINT CALLED: {file.filename}")
 
     try:
-        # Validate file type
+        #validate file type
         if not file.filename.lower().endswith('.pdf'):
             error_msg = f"Only PDF files are supported. Got: {file.filename}"
-            print(f"❌ {error_msg}")
+            print(f"{error_msg}")
             raise HTTPException(status_code=400, detail=error_msg)
 
         # Read file
         contents = await file.read()
-        print(f"📄 File read successfully: {len(contents)} bytes")
+        print(f"File read successfully: {len(contents)} bytes")
 
         if len(contents) == 0:
             error_msg = "Uploaded file is empty"
-            print(f"❌ {error_msg}")
+            print(f"{error_msg}")
             raise HTTPException(status_code=400, detail=error_msg)
 
-        # Check if it's actually a PDF (simple check)
+        #checking if it's actually a PDF (simple check)
         if contents[:4] != b'%PDF':
-            print(f"⚠️  Warning: File doesn't start with PDF magic number")
+            print(f"Warning: File doesn't start with PDF magic number")
 
         if TEST_MODE:
-            # Test mode - simulate upload
-            print(f"🧪 TEST MODE: Simulating upload for {file.filename}")
+            #test mode - simulate upload
+            print(f"TEST MODE: Simulating upload for {file.filename}")
 
             test_uploads.append({
                 "name": file.filename,
@@ -232,42 +230,42 @@ async def upload_paper(file: UploadFile = File(...)):
             }
         else:
             # Production mode
-            print(f"⚙️  PRODUCTION MODE: Processing {file.filename}")
+            print(f"PRODUCTION MODE: Processing {file.filename}")
 
             # Initialize components
             db, _, upload_service = initialize_components()
 
             if upload_service is None:
                 error_msg = "Upload service not initialized"
-                print(f"❌ {error_msg}")
+                print(f"{error_msg}")
                 raise HTTPException(status_code=500, detail=error_msg)
 
             # Process the file
-            print(f"🔧 Calling upload_service.upload_pdf()...")
+            print(f"Calling upload_service.upload_pdf()...")
             result = await upload_service.upload_pdf(contents, file.filename)
-            print(f"✅ Upload service returned: {result.get('success', 'unknown')}")
+            print(f"Upload service returned: {result.get('success', 'unknown')}")
 
             return result
 
     except HTTPException:
-        # Re-raise HTTP exceptions
+        #re-raising HTTP exceptions
         raise
-    except ValueError as e:
-        error_msg = f"Validation error: {str(e)}"
-        print(f"❌ {error_msg}")
+    except ValueError as error:
+        error_msg = f"Validation error: {str(error)}"
+        print(f"{error_msg}")
         raise HTTPException(status_code=400, detail=error_msg)
     except ImportError as e:
         error_msg = f"Module import error: {str(e)}"
-        print(f"❌ {error_msg}")
+        print(f"{error_msg}")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=error_msg)
-    except Exception as e:
-        error_msg = f"Unexpected error: {str(e)}"
-        print(f"❌ {error_msg}")
+    except Exception as error:
+        error_msg = f"Unexpected error: {str(error)}"
+        print(f"{error_msg}")
         traceback.print_exc()
         raise HTTPException(
             status_code=500,
-            detail=f"Error processing PDF: {str(e)}"
+            detail=f"Error processing PDF: {str(error)}"
         )
 
 
@@ -294,8 +292,8 @@ async def list_papers():
                 "mode": "production",
                 "timestamp": datetime.now().isoformat()
             }
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+        except Exception as error:
+            raise HTTPException(status_code=500, detail=str(error))
 
 
 @app.post("/api/ask")
@@ -319,14 +317,14 @@ async def ask_question(request: QuestionRequest):
                 top_k=request.top_k
             )
             return result
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+        except Exception as error:
+            raise HTTPException(status_code=500, detail=str(error))
 
 
-# Error handlers with detailed logging
+#error handlers with detailed logging
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request, exc):
-    print(f"❌ HTTP Exception {exc.status_code}: {exc.detail}")
+    print(f"HTTP Exception {exc.status_code}: {exc.detail}")
     return JSONResponse(
         status_code=exc.status_code,
         content={
@@ -342,7 +340,7 @@ async def http_exception_handler(request, exc):
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request, exc):
-    print(f"❌ Unhandled Exception: {exc}")
+    print(f"Unhandled Exception: {exc}")
     traceback.print_exc()
     return JSONResponse(
         status_code=500,
@@ -386,8 +384,8 @@ async def debug_database():
             "sample_documents": all_docs.get("documents", [])[:2],
             "sample_metadata": all_docs.get("metadatas", [])[:2]
         }
-    except Exception as e:
-        return {"error": str(e), "traceback": traceback.format_exc()}
+    except Exception as error:
+        return {"error": str(error), "traceback": traceback.format_exc()}
 
 
 @app.get("/api/debug/paper-content")
@@ -436,8 +434,8 @@ async def debug_paper_content():
                 ]
             }
         }
-    except Exception as e:
-        return {"error": str(e), "traceback": traceback.format_exc()}
+    except Exception as error:
+        return {"error": str(error), "traceback": traceback.format_exc()}
 
 
 @app.get("/api/debug/search-test")
@@ -468,8 +466,8 @@ async def debug_search_test(query: str = "protein"):
                 } for doc in doc_results
             ]
         }
-    except Exception as e:
-        return {"error": str(e)}
+    except Exception as error:
+        return {"error": str(error)}
 
 
 @app.post("/api/debug/test-upload")
@@ -479,7 +477,7 @@ async def debug_test_upload(file: UploadFile = File(...)):
         print(f"🧪 DEBUG UPLOAD: {file.filename}")
 
         contents = await file.read()
-        print(f"📄 File size: {len(contents)} bytes")
+        print(f"File size: {len(contents)} bytes")
 
         # Save for inspection
         os.makedirs("debug_uploads", exist_ok=True)
@@ -503,8 +501,8 @@ async def debug_test_upload(file: UploadFile = File(...)):
                 "text_preview": pdf_result.get("text", "")[:500]
             }
         }
-    except Exception as e:
-        return {"error": str(e), "traceback": traceback.format_exc()}
+    except Exception as error:
+        return {"error": str(error), "traceback": traceback.format_exc()}
 
 @app.get("/api/test-connection")
 async def test_connection():
@@ -559,8 +557,8 @@ async def debug_chunks():
                 "chunks_with_both": sum(1 for c in chunks if c["contains_both"])
             }
         }
-    except Exception as e:
-        return {"error": str(e)}
+    except Exception as error:
+        return {"error": str(error)}
 
 
 @app.get("/api/search-test")
@@ -604,8 +602,8 @@ async def search_test(query: str = "protein design"):
             "ai_status": ai_response,
             "total_in_database": db.get_document_count()
         }
-    except Exception as e:
-        return {"error": str(e)}
+    except Exception as error:
+        return {"error": str(error)}
 
 
 # ======================
@@ -615,20 +613,20 @@ async def search_test(query: str = "protein design"):
 async def startup_event():
     """Initialize components on startup"""
     print("=" * 50)
-    print(f"🚀 AInsights AI Research Assistant")
-    print(f"📅 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"🔧 Mode: {'TEST' if TEST_MODE else 'PRODUCTION'}")
-    print(f"🐛 Debug: {'ON' if DEBUG_MODE else 'OFF'}")
+    print(f"AInsights AI Research Assistant")
+    print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Mode: {'TEST' if TEST_MODE else 'PRODUCTION'}")
+    print(f"Debug: {'ON' if DEBUG_MODE else 'OFF'}")
     print("=" * 50)
 
     if not TEST_MODE:
-        print("🔄 Initializing production components...")
+        print("Initializing production components...")
         initialize_components()
 
-    print(f"✅ Server ready")
-    print(f"📡 API: http://localhost:8001")
-    print(f"📚 Docs: http://localhost:8001/docs")
-    print(f"🔍 Debug upload: http://localhost:8001/api/debug/upload")
+    print(f"Server ready")
+    print(f"API: http://localhost:8001")
+    print(f"Docs: http://localhost:8001/docs")
+    print(f"Debug upload: http://localhost:8001/api/debug/upload")
     print("=" * 50)
 
 

@@ -13,13 +13,13 @@ import subprocess
 
 def main():
     print("=" * 50)
-    print("🤖 AInsights - 3-Tier Research Assistant")
+    print("🤖 AInsights - 3-Tier Research Agentic Assistant")
     print("=" * 50)
     print("1. Level 1 - Basic RAG (PDF upload)")
-    print("2. Level 2 - arXiv Integration")
-    print("3. Level 3 - Agentic AI (LangGraph + Langfuse)")
+    print("2. Level 2 - arXiv-API Integration")
+    print("3. Level 3 - Agentic AI (LangChain + LangGraph + Langfuse)")
     print("4. Streamlit UI")
-    print("5. Monitor Dashboard")
+    print("5. Observability Monitor Dashboard")
     print("=" * 50)
 
     choice = input("Select an option (1-5): ").strip()
