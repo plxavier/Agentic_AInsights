@@ -8,7 +8,7 @@ import re
 
 
 class InsightsAI:
-    """Advanced AI Research Assistant with RAG capabilities - FIXED VERSION"""
+    """Advanced AI Scientific Research Assistant with RAG capabilities"""
 
     def __init__(self, vector_db):
         self.vector_db = vector_db
@@ -17,28 +17,29 @@ class InsightsAI:
         self.llm, self.model_name = self._initialize_llm()
 
         print(f"\n{'=' * 60}")
-        print(f"🤖 AI INITIALIZED")
-        print(f"📊 Model: {self.model_name}")
+        print(f"AI INITIALIZED")
+        print(f"Model: {self.model_name}")
         print(f"{'=' * 60}\n")
 
-        # Initialize prompts
+        #initialize prompts
         self._init_prompts()
 
-        # Conversation memory
+        #conversation memory
         self.conversation_history = []
+
 
     def _initialize_llm(self):
         """Initialize LLM with school model fallbacks"""
         api_key = os.getenv("OPENAI_API_KEY")
 
         if not api_key or api_key == "disabled":
-            print("⚠️  No OpenAI API key, using test mode")
+            print("No OpenAI API key, using test mode")
             return None, "test-mode"
 
-        # Try school models in order
-        school_models = ["gpt-4.1-mini", "gpt-4o-mini", "gpt-5-mini"]
+        #trying available open ai models, replace with your model
+        available_models = ["gpt-4.1-mini", "gpt-4o-mini", "gpt-5-mini"]
 
-        for model in school_models:
+        for model in available_models:
             try:
                 print(f"🔧 Testing school model: {model}")
                 llm = ChatOpenAI(
@@ -49,13 +50,13 @@ class InsightsAI:
                 )
                 # Quick test
                 test_response = llm([HumanMessage(content="Hello")])
-                print(f"✅ Model works: {model}")
+                print(f"Model works: {model}")
                 return llm, model
-            except Exception as e:
-                print(f"❌ Model {model} failed: {str(e)[:100]}")
+            except Exception as error:
+                print(f"Model {model} failed: {str(error)[:100]}")
                 continue
 
-        print("⚠️  All school models failed, using test mode")
+        print("All models failed, using test mode")
         return None, "test-mode"
 
     def _init_prompts(self):
@@ -91,11 +92,12 @@ Analyze connections between the new idea and existing research."""
         self.summary_system_prompt = "You are an academic summarizer."
         self.summary_human_template = "Summarize this research text:\n\n{text}"
 
+
     def answer_question(self, question: str, top_k: int = 5) -> Dict[str, Any]:
         """RAG pipeline for answering research questions - FIXED"""
 
         print(f"\n{'=' * 60}")
-        print(f"❓ QUESTION: {question}")
+        print(f"QUESTION: {question}")
         print(f"{'=' * 60}")
 
         try:
@@ -103,7 +105,7 @@ Analyze connections between the new idea and existing research."""
             docs = self.vector_db.search_documents(question, k=top_k)
 
             if not docs:
-                print("⚠️  No documents found")
+                print("No documents found")
                 return {
                     "success": False,
                     "answer": "No relevant research papers found in the database.",
@@ -111,7 +113,7 @@ Analyze connections between the new idea and existing research."""
                     "papers_used": 0
                 }
 
-            print(f"📚 Found {len(docs)} relevant documents")
+            print(f"Found {len(docs)} relevant documents")
 
             # 2. Format context PROPERLY
             context_parts = []
@@ -147,15 +149,15 @@ Analyze connections between the new idea and existing research."""
             # Combine context
             context = "\n\n---\n\n".join(context_parts)
 
-            print(f"📝 Context built: {len(context)} characters")
-            print(f"📄 Using {len(docs)} documents")
+            print(f"Context built: {len(context)} characters")
+            print(f"Using {len(docs)} documents")
 
             # 3. Generate answer
             if self.llm and self.model_name != "test-mode":
-                print(f"🤖 Using AI model: {self.model_name}")
+                print(f"Using AI model: {self.model_name}")
                 answer = self._generate_ai_answer(context, question, docs)
             else:
-                print("🧪 Using fallback (no AI)")
+                print("Using fallback (no AI)")
                 answer = self._generate_fallback_answer(context, question, docs)
 
             # 4. Extract citations
@@ -181,7 +183,7 @@ Analyze connections between the new idea and existing research."""
                 "content": answer[:500] + "..." if len(answer) > 500 else answer
             })
 
-            print(f"✅ Answer generated: {len(answer)} characters")
+            print(f"Answer generated: {len(answer)} characters")
             print(f"{'=' * 60}")
 
             return {
@@ -195,17 +197,18 @@ Analyze connections between the new idea and existing research."""
                 "model_used": self.model_name
             }
 
-        except Exception as e:
-            print(f"❌ Error in answer_question: {e}")
+        except Exception as error:
+            print(f"Error in answer_question: {error}")
             import traceback
             traceback.print_exc()
 
             return {
                 "success": False,
-                "error": str(e),
+                "error": str(error),
                 "answer": f"Error processing question: {str(e)}",
                 "sources": []
             }
+
 
     def _generate_ai_answer(self, context: str, question: str, docs: List[Document]) -> str:
         """Generate answer using AI"""
@@ -222,9 +225,10 @@ Analyze connections between the new idea and existing research."""
             response = self.llm(messages)
             return response.content
 
-        except Exception as e:
-            print(f"⚠️  AI generation failed: {e}")
+        except Exception as error:
+            print(f"AI generation failed: {error}")
             return self._generate_fallback_answer(context, question, docs)
+
 
     def _generate_fallback_answer(self, context: str, question: str, docs: List[Document]) -> str:
         """Generate answer without AI (fallback)"""
@@ -263,6 +267,7 @@ Analyze connections between the new idea and existing research."""
             answer += f"*Note: For detailed AI analysis, please ensure OpenAI API is properly configured.*"
 
         return answer
+
 
     def find_connections(self, new_idea: str, top_k: int = 7) -> Dict[str, Any]:
         """Find connections between existing research and new ideas"""
@@ -319,12 +324,13 @@ Analyze connections between the new idea and existing research."""
                 "model_used": self.model_name
             }
 
-        except Exception as e:
+        except Exception as error:
             return {
                 "success": False,
-                "error": str(e),
-                "analysis": f"Error analyzing connections: {str(e)}"
+                "error": str(error),
+                "analysis": f"Error analyzing connections: {str(error)}"
             }
+
 
     def summarize_paper(self, text: str) -> Dict[str, Any]:
         """Summarize a research paper"""
@@ -352,24 +358,26 @@ Analyze connections between the new idea and existing research."""
                 "summary_length": len(summary),
                 "model_used": self.model_name
             }
-        except Exception as e:
+        except Exception as error:
             return {
                 "success": False,
-                "error": str(e)
+                "error": str(error)
             }
+
 
     def get_conversation_history(self) -> List[Dict]:
         """Get the conversation history"""
         return self.conversation_history
+
 
     def clear_conversation(self):
         """Clear conversation history"""
         self.conversation_history = []
 
 
-# Test the AI directly
+#testing the AI directly
 if __name__ == "__main__":
-    print("🧪 Testing AI module...")
+    print("Testing AI module...")
 
 
     # Mock vector database for testing
