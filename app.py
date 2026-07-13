@@ -1,7 +1,7 @@
 import os
 import traceback
 
-os.environ["ANONYMIZED_TELEMETRY"] = "false"  # Disable ChromaDB telemetry FIRST
+os.environ["ANONYMIZED_TELEMETRY"] = "false"  #disabling ChromaDB telemetry
 
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,8 +15,8 @@ from datetime import datetime
 TEST_MODE = os.getenv("TEST_MODE", "false").lower() == "true"
 DEBUG_MODE = os.getenv("DEBUG_MODE", "true").lower() == "true"
 
-print(f"🚀 Starting in {'TEST' if TEST_MODE else 'PRODUCTION'} mode")
-print(f"🔧 Debug mode: {'ON' if DEBUG_MODE else 'OFF'}")
+print(f"Starting in {'TEST' if TEST_MODE else 'PRODUCTION'} mode")
+print(f"Debug mode: {'ON' if DEBUG_MODE else 'OFF'}")
 
 app = FastAPI(
     title="AInsights AI Research Assistant API" + (" [TEST MODE]" if TEST_MODE else ""),
@@ -38,7 +38,7 @@ test_uploads = []
 #CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for debugging
+    allow_origins=["*"],  #allowing all origins for debugging
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -55,7 +55,7 @@ def initialize_components():
     global db, ai, upload_service
 
     if db is None and not TEST_MODE:
-        print("🔧 Initializing production components...")
+        print("Initializing production components...")
         try:
             from src.database import VectorDatabase
             from src.ai import InsightsAI
@@ -83,7 +83,7 @@ def initialize_components():
     return db, ai, upload_service
 
 
-# Request models
+#request models
 class QuestionRequest(BaseModel):
     question: str
     top_k: Optional[int] = 5
