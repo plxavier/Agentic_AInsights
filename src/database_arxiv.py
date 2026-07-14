@@ -32,7 +32,8 @@ class ArxivDatabase:
 
         # In-memory cache
         self.papers_cache = {}
-        print(f"✅ Database initialized at {persist_dir}")
+        print(f"Database initialized at {persist_dir}")
+
 
     def add_paper(self, paper_data: Dict) -> Dict:
         """Add a paper abstract to the database"""
@@ -71,11 +72,12 @@ Summary: {paper_data['summary']}
                 "title": paper_data["title"]
             }
 
-        except Exception as e:
+        except Exception as error:
             return {
                 "success": False,
-                "error": str(e)
+                "error": str(error)
             }
+
 
     def add_full_paper(self, paper_data: Dict) -> Dict:
         """Add a full paper with chunks to the database"""
@@ -159,11 +161,11 @@ ABSTRACT: {paper_data['summary']}
                 "chunks_added": chunks_added
             }
 
-        except Exception as e:
-            print(f"❌ Error adding full paper: {e}")
+        except Exception as error:
+            print(f"Error adding full paper: {error}")
             return {
                 "success": False,
-                "error": str(e)
+                "error": str(error)
             }
 
     def get_full_paper(self, arxiv_id: str) -> Optional[Dict]:
@@ -210,9 +212,10 @@ ABSTRACT: {paper_data['summary']}
 
             return None
 
-        except Exception as e:
-            print(f"❌ Error getting paper: {e}")
+        except Exception as error:
+            print(f"Error getting paper: {error}")
             return None
+
 
     def get_paper(self, paper_id: str) -> Optional[Dict]:
         """Get a paper by ID"""
@@ -223,6 +226,7 @@ ABSTRACT: {paper_data['summary']}
             return None
         except:
             return None
+
 
     def search_papers(self, query: str, n_results: int = 5) -> List[Dict]:
         """Search papers by query - searches both abstracts and full text"""
@@ -279,9 +283,10 @@ ABSTRACT: {paper_data['summary']}
 
             return papers
 
-        except Exception as e:
-            print(f"❌ Search error: {e}")
+        except Exception as error:
+            print(f"Search error: {error}")
             return []
+
 
     def get_all_papers(self) -> List[Dict]:
         """Get all papers (main documents only, not chunks)"""
@@ -308,9 +313,10 @@ ABSTRACT: {paper_data['summary']}
                             "added_date": metadata.get("added_date", "")
                         })
             return papers
-        except Exception as e:
-            print(f"❌ Error getting papers: {e}")
+        except Exception as error:
+            print(f"Error getting papers: {error}")
             return []
+
 
     def count_papers(self) -> int:
         """Get number of papers (main documents only)"""
@@ -319,6 +325,7 @@ ABSTRACT: {paper_data['summary']}
             return len(all_papers)
         except:
             return 0
+
 
     def get_stats(self) -> Dict:
         """Get detailed database statistics"""
@@ -348,14 +355,15 @@ ABSTRACT: {paper_data['summary']}
                 "total_documents": len(results.get("ids", [])),
                 "source_breakdown": source_types
             }
-        except Exception as e:
-            print(f"❌ Error getting stats: {e}")
+        except Exception as error:
+            print(f"Error getting stats: {error}")
             return {
                 "total_papers": 0,
                 "total_chunks": 0,
                 "total_documents": 0,
                 "source_breakdown": {}
             }
+
 
     def clear(self):
         """Clear database"""
@@ -396,9 +404,10 @@ class ArxivLoader:
                 "categories": paper.categories
             }
 
-        except Exception as e:
-            print(f"❌ Error fetching arXiv paper: {e}")
+        except Exception as error:
+            print(f"Error fetching arXiv paper: {error}")
             return None
+
 
     @staticmethod
     def extract_text_from_pdf(pdf_bytes: bytes, max_pages: int = 30) -> str:
@@ -426,8 +435,9 @@ class ArxivLoader:
 
             return text[:100000]  # Increased limit to 100k chars
 
-        except Exception as e:
-            return f"Error extracting PDF: {e}"
+        except Exception as error:
+            return f"Error extracting PDF: {error}"
+
 
     @staticmethod
     def extract_text_from_html(html_content: str) -> str:
@@ -451,8 +461,9 @@ class ArxivLoader:
 
             return text[:150000]  # Limit size
 
-        except Exception as e:
-            return f"Error extracting HTML: {e}"
+        except Exception as error:
+            return f"Error extracting HTML: {error}"
+
 
     @staticmethod
     def chunk_text(text: str, chunk_size: int = 1000, overlap: int = 200) -> List[str]:
@@ -475,5 +486,5 @@ class ArxivLoader:
             if len(chunks) >= 200:
                 break
 
-        print(f"📄 Created {len(chunks)} chunks")
+        print(f"Created {len(chunks)} chunks")
         return chunks
