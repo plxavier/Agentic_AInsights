@@ -17,14 +17,14 @@ import fitz
 import os
 from dotenv import load_dotenv
 
-# 🔥 CRITICAL: Load environment variables FIRST
+#CRITICAL: Load environment variables FIRST
 load_dotenv(override=True)
 
 # Debug: Check if key is loaded
 api_key = os.getenv("OPENAI_API_KEY")
-print(f"🔑 DEBUG: API Key loaded: {'YES' if api_key else 'NO'}")
+print(f"DEBUG: API Key loaded: {'YES' if api_key else 'NO'}")
 if api_key:
-    print(f"   Key starts with: {api_key[:10]}...")
+    print(f"Key starts with: {api_key[:10]}...")
 
 
 class VectorDatabase:
@@ -33,8 +33,8 @@ class VectorDatabase:
     def __init__(self, collection_name: str = "insights_research"):
         self.persist_dir = os.getenv("CHROMA_PERSIST_DIR", "./chroma_db")
 
-        # 🚫 TEMPORARY: Skip OpenAI for now to avoid API key issues
-        print("⚠️  Initializing without OpenAI embeddings (temporary)")
+        #TEMPORARY: Skip OpenAI for now to avoid API key issues
+        print("Initializing without OpenAI embeddings (temporary)")
         self.embeddings = None
 
         # Initialize ChromaDB
@@ -60,7 +60,7 @@ class VectorDatabase:
             client=self.client
         )
 
-        # 🚫 CHANGED: Use NON-recursive text splitter
+        #non-recursive text splitter
         self.text_splitter = CharacterTextSplitter(
             chunk_size=1000,
             chunk_overlap=200,
@@ -68,11 +68,12 @@ class VectorDatabase:
             length_function=len
         )
 
-        # Cache for text documents
+        #cache for text documents
         self.text_documents_cache = []
 
         # Track uploaded files to prevent duplicates
         self.processed_hashes = set()
+
 
     def safe_add_paper(self, text: str, metadata: Dict = None, max_chunks: int = 100) -> Dict:
         """SAFE VERSION: Add paper with recursion protection"""
@@ -83,15 +84,15 @@ class VectorDatabase:
         text_hash = hashlib.md5(text.encode()).hexdigest()[:16]
 
         if text_hash in self.processed_hashes:
-            print(f"⚠️  Duplicate content detected, skipping")
+            print(f"Duplicate content detected, skipping")
             return {"chunks_added": 0, "status": "duplicate"}
 
-        # 🚫 LIMIT text length to prevent issues
+        #LIMIT text length to prevent issues
         if len(text) > 100000:
             text = text[:100000]
-            print(f"⚠️  Text truncated to 100k characters")
+            print(f"Text truncated to 100k characters")
 
-        # 🚫 Simple splitting - NO recursion
+        #Simple splitting - NO recursion
         words = text.split()
         chunks = []
 
@@ -99,7 +100,7 @@ class VectorDatabase:
         chunk_size = 800
         for i in range(0, len(words), chunk_size):
             if len(chunks) >= max_chunks:
-                print(f"⚠️  Hit max chunks limit ({max_chunks})")
+                print(f"Hit max chunks limit ({max_chunks})")
                 break
             chunk = ' '.join(words[i:i + chunk_size])
             chunks.append(chunk)
@@ -107,7 +108,7 @@ class VectorDatabase:
             if i > 0 and i % 5000 == 0:
                 print(f"   Processed {i} words...")
 
-        print(f"📄 Created {len(chunks)} safe chunks")
+        print(f"Created {len(chunks)} safe chunks")
 
         # Prepare metadata
         import datetime
@@ -147,8 +148,9 @@ class VectorDatabase:
 
         self.processed_hashes.add(text_hash)
 
-        print(f"✅ Added paper safely with {len(chunks)} chunks")
+        print(f"Added paper safely with {len(chunks)} chunks")
         return {"chunks_added": len(chunks), "status": "success", "hash": text_hash}
+
 
     def search(self, query: str, k: int = 5, filters: Optional[Dict] = None):
         """Simple search - works without embeddings"""
@@ -172,7 +174,7 @@ class VectorDatabase:
     def search_documents(self, query: str, k: int = 5, filters: Optional[Dict] = None) -> List[Document]:
         """Search and return LangChain Document objects - IMPROVED FOR SPECIFIC DETAILS"""
         try:
-            print(f"\n🔍 SEARCHING for: '{query}'")
+            print(f"\nSEARCHING for: '{query}'")
 
             # Get ALL documents
             all_results = self.collection.get()
@@ -180,10 +182,10 @@ class VectorDatabase:
             all_metas = all_results.get("metadatas", [])
 
             if not all_docs:
-                print("⚠️  No documents in database!")
+                print("No documents in database!")
                 return []
 
-            print(f"📊 Searching through {len(all_docs)} chunks")
+            print(f"Searching through {len(all_docs)} chunks")
 
             # Convert query to lowercase
             query_lower = query.strip().lower()
@@ -201,7 +203,7 @@ class VectorDatabase:
                 # 1. EXACT PHRASE MATCH (highest priority)
                 if query_lower in text_lower:
                     score += 100  # Very high score for exact phrase
-                    print(f"   ✅ Chunk {i}: Found exact phrase")
+                    print(f"Chunk {i}: Found exact phrase")
 
                 # 2. Check for ALL query words (AND logic)
                 all_words_present = all(word in text_lower for word in query_words if len(word) > 3)
@@ -248,7 +250,7 @@ class VectorDatabase:
             # Take top k
             top_docs = scored_docs[:k]
 
-            print(f"\n📊 SEARCH RESULTS:")
+            print(f"\nSEARCH RESULTS:")
             print(f"   Found {len(scored_docs)} chunks with score > 0")
             print(f"   Returning top {len(top_docs)} chunks")
 
@@ -267,8 +269,8 @@ class VectorDatabase:
 
             return documents
 
-        except Exception as e:
-            print(f"❌ Search error: {e}")
+        except Exception as error:
+            print(f"Search error: {error}")
             import traceback
             traceback.print_exc()
             return []
@@ -277,6 +279,7 @@ class VectorDatabase:
     def get_document_count(self) -> int:
         """Get total number of documents in collection"""
         return self.collection.count()
+
 
     def get_all_papers(self) -> List[Dict]:
         """Get metadata for all papers"""
@@ -297,12 +300,13 @@ class VectorDatabase:
 
         return list(papers.values())
 
+
     def clear_database(self):
         """Clear all documents from the database"""
         self.collection.delete(where={})
         self.text_documents_cache = []
         self.processed_hashes.clear()
-        print("🗑️ Database cleared")
+        print("Database cleared")
 
 
 class DocumentLoader:
@@ -311,7 +315,7 @@ class DocumentLoader:
     @staticmethod
     def safe_load_pdf_bytes(pdf_bytes: bytes, filename: str = "uploaded.pdf", max_pages: int = 20) -> Dict:
         """SAFE VERSION: Load PDF from bytes WITHOUT recursion"""
-        print(f"📥 Processing {filename} safely...")
+        print(f"Processing {filename} safely...")
 
         try:
             # Use BytesIO to avoid temp files
@@ -337,7 +341,7 @@ class DocumentLoader:
                         print(f"   Extracted page {i + 1}/{pages_to_process}...")
 
                 except Exception as page_error:
-                    print(f"   ⚠️  Error on page {i + 1}: {page_error}")
+                    print(f"Error on page {i + 1}: {page_error}")
                     continue
 
             # Extract basic metadata
@@ -362,14 +366,15 @@ class DocumentLoader:
                 "hash": hashlib.md5(text.encode()).hexdigest()[:16]
             }
 
-        except Exception as e:
-            print(f"❌ PDF processing error: {e}")
+        except Exception as error:
+            print(f"PDF processing error: {error}")
             return {
                 "success": False,
                 "text": "",
                 "metadata": {"source": filename, "error": str(e)},
                 "hash": ""
             }
+
 
     @staticmethod
     def load_pdf(file_path: str, max_pages: int = 20) -> Dict:
@@ -378,9 +383,10 @@ class DocumentLoader:
             with open(file_path, 'rb') as f:
                 pdf_bytes = f.read()
             return DocumentLoader.safe_load_pdf_bytes(pdf_bytes, os.path.basename(file_path), max_pages)
-        except Exception as e:
-            print(f"❌ Error reading file {file_path}: {e}")
-            return {"success": False, "text": "", "metadata": {"error": str(e)}}
+        except Exception as error:
+            print(f"Error reading file {file_path}: {error}")
+            return {"success": False, "text": "", "metadata": {"error": str(error)}}
+
 
     @staticmethod
     def safe_chunk_text(text: str, chunk_size: int = 800, overlap: int = 100) -> List[str]:
@@ -411,7 +417,7 @@ class FixedUploadAPI:
 
     async def handle_upload(self, file_bytes: bytes, filename: str) -> Dict:
         """Handle PDF upload safely"""
-        print(f"🔄 Processing upload: {filename}")
+        print(f"Processing upload: {filename}")
 
         # Step 1: Safe PDF extraction
         pdf_result = DocumentLoader.safe_load_pdf_bytes(file_bytes, filename)
@@ -453,7 +459,7 @@ class FixedUploadAPI:
 
         return {
             "success": True,
-            "message": f"✅ '{filename}' processed successfully",
+            "message": f"'{filename}' processed successfully",
             "details": {
                 "filename": filename,
                 "chunks_added": db_result.get("chunks_added", 0),
@@ -464,6 +470,7 @@ class FixedUploadAPI:
             }
         }
 
+
     def get_stats(self) -> Dict:
         """Get upload statistics"""
         return {
@@ -473,21 +480,22 @@ class FixedUploadAPI:
         }
 
 
+
 # ====== QUICK TEST ======
 if __name__ == "__main__":
-    print("🧪 Testing safe database...")
+    print("Testing safe database...")
 
     # Initialize
     db = VectorDatabase()
     upload_api = FixedUploadAPI(db)
 
-    print(f"✅ Database initialized")
-    print(f"✅ Upload API ready")
-    print(f"✅ Current documents: {db.get_document_count()}")
+    print(f"Database initialized")
+    print(f"Upload API ready")
+    print(f"Current documents: {db.get_document_count()}")
 
     # Test with sample text
     test_text = "This is a test document. " * 100
     result = db.safe_add_paper(test_text, {"title": "Test Document", "source": "test"})
 
-    print(f"✅ Test added: {result}")
-    print(f"✅ Now documents: {db.get_document_count()}")
+    print(f"Test added: {result}")
+    print(f"Now documents: {db.get_document_count()}")
