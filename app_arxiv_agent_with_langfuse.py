@@ -1,5 +1,5 @@
 # ============================================================================
-# app_arxiv_agent.py - WITH TOKEN TRACKING AND LANGFUSE INTEGRATION (FIXED)
+# app_arxiv_agent.py - WITH TOKEN TRACKING AND LANGFUSE INTEGRATION
 # ============================================================================
 
 import os
@@ -22,9 +22,9 @@ from fastapi import FastAPI, HTTPException, Request
 from dotenv import load_dotenv
 import uvicorn
 
-# ============================================================================
-# Langfuse Integration
-# ============================================================================
+
+
+#Langfuse Integration
 try:
     from langfuse import Langfuse
     from langfuse.callback import CallbackHandler
@@ -43,12 +43,12 @@ try:
         public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
         host=os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
     )
-    print("✅ Langfuse enabled")
-except Exception as e:
+    print("Langfuse enabled")
+except Exception as error:
     LANGFUSE_AVAILABLE = False
     langfuse_client = None
     langfuse_handler = None
-    print(f"⚠️ Langfuse not available: {e}")
+    print(f"Langfuse not available: {error}")
 
 # ============================================================================
 # Configuration
@@ -61,9 +61,9 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4.1-mini")
 
 if not OPENAI_API_KEY:
-    raise ValueError("❌ OPENAI_API_KEY not found in .env file")
+    raise ValueError("OPENAI_API_KEY not found in .env file")
 
-print(f"📋 Using model: {MODEL_NAME}")
+print(f"Using model: {MODEL_NAME}")
 
 # LLM Configuration with Langfuse callback
 llm = ChatOpenAI(
@@ -73,7 +73,7 @@ llm = ChatOpenAI(
     callbacks=[langfuse_handler] if langfuse_handler else []
 )
 
-print(f"✅ OpenAI client initialized with model: {llm.model_name}")
+print(f"OpenAI client initialized with model: {llm.model_name}")
 
 
 # ============================================================================
@@ -149,8 +149,8 @@ def get_paper_details(arxiv_id: str) -> Dict:
         if response.status_code == 200:
             return response.json()
         return {}
-    except Exception as e:
-        print(f"Paper details error: {e}")
+    except Exception as error:
+        print(f"Paper details error: {error}")
         return {}
 
 
@@ -180,9 +180,9 @@ def ask_question(question: str, arxiv_id: str = None, top_k: int = 3) -> Dict:
         if response.status_code == 200:
             return response.json()
         return {"answer": "Failed to get answer", "sources": []}
-    except Exception as e:
-        print(f"Question error: {e}")
-        return {"answer": f"Error: {e}", "sources": []}
+    except Exception as error:
+        print(f"Question error: {error}")
+        return {"answer": f"Error: {error}", "sources": []}
 
 
 # ============================================================================
@@ -191,7 +191,7 @@ def ask_question(question: str, arxiv_id: str = None, top_k: int = 3) -> Dict:
 
 def research_planner(state: ResearchState) -> ResearchState:
     """Plan the research approach based on user query"""
-    print(f"📋 Planning research for: {state['query']}")
+    print(f"Planning research for: {state['query']}")
 
     system_msg = """You are a research planning expert. Break down the user's research query into a step-by-step plan.
     Output a numbered list of 5-7 research steps."""
@@ -226,14 +226,14 @@ def search_executor(state: ResearchState) -> ResearchState:
     })
 
     state['search_results'] = results
-    print(f"🔍 Found {len(results)} papers")
+    print(f"Found {len(results)} papers")
     return state
 
 
 def paper_selector(state: ResearchState) -> ResearchState:
     """Select the most relevant papers from search results"""
     if not state['search_results']:
-        print("⚠️ No search results to select from")
+        print("No search results to select from")
         return state
 
     print("📚 Selecting relevant papers...")
@@ -270,9 +270,9 @@ def paper_selector(state: ResearchState) -> ResearchState:
             selected = list(range(min(3, len(state['search_results']))))
 
         state['selected_papers'] = [state['search_results'][i] for i in selected]
-        print(f"📚 Selected {len(state['selected_papers'])} papers")
-    except Exception as e:
-        print(f"Error selecting papers: {e}")
+        print(f"Selected {len(state['selected_papers'])} papers")
+    except Exception as error:
+        print(f"Error selecting papers: {error}")
         state['selected_papers'] = state['search_results'][:3]
 
     return state
@@ -280,7 +280,7 @@ def paper_selector(state: ResearchState) -> ResearchState:
 
 def paper_detail_fetcher(state: ResearchState) -> ResearchState:
     """Fetch detailed information for selected papers"""
-    print("📄 Fetching paper details...")
+    print("Fetching paper details...")
 
     for paper in state['selected_papers']:
         arxiv_id = paper.get('arxiv_id')
@@ -292,19 +292,19 @@ def paper_detail_fetcher(state: ResearchState) -> ResearchState:
                     details['authors'] = []
                 state['paper_details'][arxiv_id] = details
 
-    print(f"📄 Fetched details for {len(state['paper_details'])} papers")
+    print(f"Fetched details for {len(state['paper_details'])} papers")
     return state
 
 
 def question_generator(state: ResearchState) -> ResearchState:
     """Generate specific, non-repeating questions to ask about the papers"""
-    print("❓ Generating specific questions...")
+    print("Generating specific questions...")
 
     if 'asked_questions' not in state:
         state['asked_questions'] = []
 
     if len(state.get('answers', [])) >= 6:
-        print("✅ Already have 6 answers, moving to synthesis")
+        print("Already have 6 answers, moving to synthesis")
         state['current_question'] = ""
         return state
 
@@ -315,17 +315,17 @@ def question_generator(state: ResearchState) -> ResearchState:
 
     state['asked_questions'].append(question)
     state['current_question'] = question
-    print(f"❓ Generated question: {question[:100]}...")
+    print(f"Generated question: {question[:100]}...")
     return state
 
 
 def qa_executor(state: ResearchState) -> ResearchState:
     """Execute Q&A on current question"""
     if not state.get('current_question'):
-        print("⚠️ No question to answer")
+        print("No question to answer")
         return state
 
-    print(f"💬 Answering: {state['current_question'][:100]}...")
+    print(f"Answering: {state['current_question'][:100]}...")
 
     result = ask_question.invoke({
         "question": state['current_question'],
@@ -350,8 +350,8 @@ def qa_executor(state: ResearchState) -> ResearchState:
         if source not in state['citations']:
             state['citations'].append(source)
 
-    print(f"✅ Answer received ({len(answer)} chars)")
-    print(f"📊 Total answers collected: {len(state['answers'])}")
+    print(f"Answer received ({len(answer)} chars)")
+    print(f"Total answers collected: {len(state['answers'])}")
 
     state['current_question'] = ""
     return state
@@ -359,7 +359,7 @@ def qa_executor(state: ResearchState) -> ResearchState:
 
 def synthesis_creator(state: ResearchState) -> ResearchState:
     """Create final synthesis from all answers"""
-    print("📝 Creating final synthesis...")
+    print("Creating final synthesis...")
 
     if not state.get('answers') or len(state['answers']) == 0:
         state['synthesis'] = "No answers were generated during research."
@@ -382,9 +382,9 @@ def synthesis_creator(state: ResearchState) -> ResearchState:
     try:
         response = llm.invoke(messages)
         state['synthesis'] = response.content
-        print(f"📝 Synthesis created ({len(state['synthesis'])} chars)")
-    except Exception as e:
-        print(f"Error creating synthesis: {e}")
+        print(f"Synthesis created ({len(state['synthesis'])} chars)")
+    except Exception as error:
+        print(f"Error creating synthesis: {error}")
         state[
             'synthesis'] = f"# Research Synthesis: {state['research_goal']}\n\nBased on {len(state['answers'])} questions answered."
 
@@ -461,9 +461,8 @@ def build_research_graph():
     return graph
 
 
-# ============================================================================
-# Research Agent Class
-# ============================================================================
+
+#Research Agent Class
 
 class ArxivResearchAgent:
     """Main agent class for arXiv research"""
@@ -501,7 +500,7 @@ class ArxivResearchAgent:
             "callbacks": [langfuse_handler] if langfuse_handler else []
         }
 
-        print(f"\n🔍 Researching: {query}")
+        print(f"\nResearching: {query}")
         print("-" * 50)
 
         try:
@@ -520,21 +519,20 @@ class ArxivResearchAgent:
                 "trace_id": trace_id,
                 "duration_seconds": round(duration, 2)
             }
-        except Exception as e:
-            print(f"❌ Error during research: {e}")
+        except Exception as error:
+            print(f"Error during research: {error}")
             traceback.print_exc()
             return {
                 "success": False,
                 "query": query,
-                "error": str(e),
+                "error": str(error),
                 "thread_id": thread_id,
                 "trace_id": trace_id
             }
 
 
-# ============================================================================
-# FastAPI Models
-# ============================================================================
+
+#FastAPI Models
 
 class ResearchRequest(BaseModel):
     """Request model for research endpoint"""
@@ -556,9 +554,9 @@ class FollowupRequest(BaseModel):
     )
 
 
-# ============================================================================
-# FastAPI App
-# ============================================================================
+
+#FastAPI App
+
 
 agent_app = FastAPI(
     title="arXiv Research Agent",
@@ -603,8 +601,8 @@ async def agent_research(request: ResearchRequest):
             )
             trace_id = trace.id
             print(f"🔗 Langfuse trace: {trace_id}")
-        except Exception as e:
-            print(f"⚠️ Langfuse error: {e}")
+        except Exception as error:
+            print(f"Langfuse error: {error}")
 
     try:
         result = research_agent.research(
@@ -630,25 +628,26 @@ async def agent_research(request: ResearchRequest):
                     }
                 )
                 langfuse_client.flush()
-            except Exception as e:
-                print(f"⚠️ Langfuse update error: {e}")
+            except Exception as error:
+                print(f"Langfuse update error: {error}")
 
-        print(f"✅ Research completed in {duration:.2f}s")
+        print(f"Research completed in {duration:.2f}s")
         return result
 
-    except Exception as e:
+    except Exception as error:
         duration = time.time() - start_time
+        print(f"Langfuse trace error: {error}")
 
         if trace:
             try:
-                trace.update(level="ERROR", output={"error": str(e)})
+                trace.update(level="ERROR", output={"error": str(error)})
                 langfuse_client.flush()
             except Exception as le:
-                print(f"⚠️ Langfuse error: {le}")
+                print(f"Langfuse error: {le}")
 
-        print(f"❌ Error after {duration:.2f}s: {str(e)}")
+        print(f"Error after {duration:.2f}s: {str(error)}")
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(error))
 
 
 @agent_app.post("/agent/followup")
@@ -657,8 +656,8 @@ async def agent_followup(request: FollowupRequest):
     try:
         result = research_agent.research(query=request.question, thread_id=request.thread_id)
         return {"answer": result.get("synthesis", "No answer"), "thread_id": request.thread_id}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=str(error))
 
 
 @agent_app.get("/agent/status/{thread_id}")
@@ -667,18 +666,18 @@ async def agent_status(thread_id: str):
     return {"thread_id": thread_id, "status": "active"}
 
 
-# ============================================================================
-# Main execution
-# ============================================================================
+
+#Main execution
+
 
 if __name__ == "__main__":
     print("=" * 70)
-    print("🤖 ARXIV RESEARCH AGENT API")
+    print("ARXIV RESEARCH AGENT API")
     print("=" * 70)
-    print(f"📋 Model: {MODEL_NAME}")
-    print(f"📡 API: http://localhost:8001")
-    print(f"📚 Docs: http://localhost:8001/docs")
-    print(f"🩺 Health: http://localhost:8001/agent/health")
+    print(f"Model: {MODEL_NAME}")
+    print(f"API: http://localhost:8001")
+    print(f"Docs: http://localhost:8001/docs")
+    print(f"Health: http://localhost:8001/agent/health")
     print("=" * 70)
 
     uvicorn.run(
