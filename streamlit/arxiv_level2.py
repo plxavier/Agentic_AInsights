@@ -423,9 +423,9 @@ with st.sidebar:
     st.markdown("---")
 
     # API Status
-    st.subheader("📡 API Status")
+    st.subheader("API Status")
     if check_api():
-        st.success("✅ Connected")
+        st.success("Connected")
 
         try:
             response = requests.get(f"{API_URL}/api/stats")
@@ -436,7 +436,7 @@ with st.sidebar:
         except:
             pass
     else:
-        st.error("❌ Not Connected")
+        st.error("Not Connected")
         st.info("Start API server:")
         st.code("python app_arxiv.py")
         st.stop()
@@ -446,7 +446,7 @@ with st.sidebar:
     # Quick Actions
     st.subheader("⚡ Quick Actions")
 
-    if st.button("📋 Refresh Paper List", use_container_width=True):
+    if st.button("Refresh Paper List", use_container_width=True):
         try:
             response = requests.get(f"{API_URL}/api/papers")
             if response.status_code == 200:
@@ -456,7 +456,7 @@ with st.sidebar:
         except Exception as e:
             st.error(f"Error: {e}")
 
-    if st.button("📊 Database Stats", use_container_width=True):
+    if st.button("Database Stats", use_container_width=True):
         try:
             response = requests.get(f"{API_URL}/api/stats")
             if response.status_code == 200:
@@ -477,7 +477,7 @@ with st.sidebar:
     if st.session_state.get('show_confirm', False):
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("✅ Yes, Clear", type="primary"):
+            if st.button("Yes, Clear", type="primary"):
                 try:
                     response = requests.post(f"{API_URL}/api/clear")
                     if response.status_code == 200:
@@ -492,12 +492,12 @@ with st.sidebar:
                 except:
                     st.error("Failed to clear")
         with col2:
-            if st.button("❌ Cancel"):
+            if st.button("Cancel"):
                 st.session_state.show_confirm = False
                 st.rerun()
 
     st.markdown("---")
-    st.caption(f"🕐 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    st.caption(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 # Main content tabs
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
@@ -575,7 +575,7 @@ with tab1:
             # Show full paper info if available
             if st.session_state.get('full_info'):
                 info = st.session_state.full_info
-                st.info(f"📄 Full paper: {info['chunks']} chunks, {info['source']} source")
+                st.info(f"Full paper: {info['chunks']} chunks, {info['source']} source")
 
             # Add to database button
             col1, col2, col3 = st.columns([1, 2, 1])
@@ -843,8 +843,8 @@ with tab4:
                     if response.status_code == 200:
                         paper = response.json()
                         st.session_state.viewing_paper = paper
-                except Exception as e:
-                    st.error(f"Error: {e}")
+                except Exception as error:
+                    st.error(f"Error: {error}")
 
         # Display paper details
         if st.session_state.get('viewing_paper'):
